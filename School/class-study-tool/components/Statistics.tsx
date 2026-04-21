@@ -29,15 +29,28 @@ export default function Statistics({
 
   const masteredQuestions = questions.filter((q) => {
     const s = stats[q.id];
-    return s && s.correct > 0 && s.incorrect === 0;
+    return s && s.attempts > 0 && s.correct > 0 && s.incorrect === 0;
   });
 
+  // Questions the user attempted but got wrong at least once
   const incorrectQuestions = questions.filter((q) => {
     const s = stats[q.id];
-    return !s || s.incorrect > 0 || s.correct === 0;
+    return s && s.attempts > 0 && s.incorrect > 0;
   });
 
-  const allMastered = incorrectQuestions.length === 0;
+  // Questions never attempted (user exited early)
+  const unattemptedQuestions = questions.filter((q) => {
+    const s = stats[q.id];
+    return !s || s.attempts === 0;
+  });
+
+  // Practice queue: questions with errors OR never attempted (all non-mastered)
+  const practiceQueue = questions.filter((q) => {
+    const s = stats[q.id];
+    return !s || s.attempts === 0 || s.incorrect > 0;
+  });
+
+  const allMastered = practiceQueue.length === 0;
 
   return (
     <div className="space-y-6">
@@ -92,7 +105,9 @@ export default function Statistics({
         </Card>
         <Card className="border-red-200 bg-red-50">
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-red-700">{incorrectQuestions.length}</div>
+            <div className="text-2xl font-bold text-red-700">
+              {incorrectQuestions.length + unattemptedQuestions.length}
+            </div>
             <div className="text-xs text-red-600 mt-1">Need Review</div>
           </CardContent>
         </Card>
@@ -174,11 +189,11 @@ export default function Statistics({
           <Button
             className="flex-1"
             size="lg"
-            onClick={() => onContinue(incorrectQuestions)}
+            onClick={() => onContinue(practiceQueue)}
           >
             <BookOpen className="w-5 h-5 mr-2" />
-            Practice {incorrectQuestions.length} Missed Question
-            {incorrectQuestions.length !== 1 ? "s" : ""}
+            Practice {practiceQueue.length} Question
+            {practiceQueue.length !== 1 ? "s" : ""}
           </Button>
         )}
         <Button variant="outline" size="lg" onClick={onRestart} className="flex-1">

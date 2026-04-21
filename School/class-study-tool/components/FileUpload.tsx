@@ -22,6 +22,7 @@ function validateQuestions(data: unknown): data is QuestionSet {
       typeof question.question === "string" &&
       Array.isArray(question.options) &&
       question.options.length >= 2 &&
+      question.options.length <= 6 &&
       question.options.every((o: unknown) => typeof o === "string") &&
       typeof question.correctAnswer === "number" &&
       question.correctAnswer >= 0 &&
